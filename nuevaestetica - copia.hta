@@ -481,30 +481,34 @@
     </div>
     <!-- Lista paginada de formatos -->
     <div id="lista-formatos" style="background:#f8fafc;border-radius:10px;padding:19px 20px;min-height:90px;margin-bottom:15px;"></div>
-    <!-- Selección de destino -->
+    <!-- Selección de destino adaptada -->
     <div style="margin-bottom:13px;font-weight:500;">Destino:</div>
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
-      <div>
-        <label style="font-size:.98em;font-weight:500;">Año:</label><br>
-        <select id="select-anio-oficio" style="min-width:80px;padding:6px 7px;border-radius:6px;border:1px solid #bccce7;font-size:1em;"></select>
-      </div>
-      <div>
+      <div style="flex:1;">
         <label style="font-size:.98em;font-weight:500;">Caso:</label><br>
-        <select id="select-caso-oficio" style="min-width:110px;padding:6px 7px;border-radius:6px;border:1px solid #bccce7;font-size:1em;"></select>
-      </div>
-      <div>
-        <label style="font-size:.98em;font-weight:500;">Subcaso (opcional):</label><br>
-        <select id="select-subcaso-oficio" style="min-width:130px;padding:6px 7px;border-radius:6px;border:1px solid #bccce7;font-size:1em;">
-          <option value="">(Sin subcaso)</option>
-        </select>
+        <select id="select-caso-oficio-principal" style="min-width:110px;padding:6px 7px;border-radius:6px;border:1px solid #bccce7;font-size:1em;" onchange="onSeleccionarCasoOficio()"></select>
       </div>
     </div>
-    <!-- Nuevo nombre -->
-    <div style="margin-bottom:7px;font-weight:500;">Nuevo nombre (sin extensión):</div>
-    <input id="nuevo-nombre-oficio" type="text" placeholder="Ejemplo: Petición Juan"
-           style="width:100%;font-size:1em;padding:9px 12px;margin-bottom:18px;border-radius:7px;border:1.5px solid #3772b3;box-sizing:border-box;">
-    <!-- Botón de acción -->
-    <button class="boton" style="width:100%;font-size:1.12em;padding:13px 0;" onclick="copiarYCrearOficio()">Copiar y abrir formato</button>
+    <div id="oficio-secundarios" style="display:none;">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+        <div>
+          <label style="font-size:.98em;font-weight:500;">Año:</label><br>
+          <input id="anio-oficio-secundario" type="text" readonly style="min-width:80px;padding:6px 7px;border-radius:6px;border:1px solid #bccce7;font-size:1em;background:#f5f7fa;">
+        </div>
+        <div>
+          <label style="font-size:.98em;font-weight:500;">Subcaso (opcional):</label><br>
+          <select id="select-subcaso-oficio-principal" style="min-width:130px;padding:6px 7px;border-radius:6px;border:1px solid #bccce7;font-size:1em;">
+            <option value="">(Sin subcaso)</option>
+          </select>
+        </div>
+      </div>
+      <!-- Nuevo nombre -->
+      <div style="margin-bottom:7px;font-weight:500;">Nuevo nombre (sin extensión):</div>
+      <input id="nuevo-nombre-oficio" type="text" placeholder="Ejemplo: Petición Juan"
+             style="width:100%;font-size:1em;padding:9px 12px;margin-bottom:18px;border-radius:7px;border:1.5px solid #3772b3;box-sizing:border-box;">
+      <!-- Botón de acción -->
+      <button class="boton" style="width:100%;font-size:1.12em;padding:13px 0;" onclick="copiarYCrearOficio()">Copiar y abrir formato</button>
+    </div>
   </div>
 </div>
 
@@ -638,7 +642,6 @@ function mostrarSeccion(seccion) {
   // Si se selecciona "crear-oficios", recarga los formatos y combos de año/caso/subcaso
   if (seccion === "crear-oficios") {
     cargarFormatosOficios();
-    cargarAniosOficio();
   }
 }
 
@@ -855,118 +858,6 @@ function mostrarBuscarPaso(tipo) {
     }
   }
 
-//LENAR AÑOS
-function llenarAniosOficio() {
-  var select = document.getElementById('select-anio-oficio');
-  select.innerHTML = "";
-  var anios = [];
-  try {
-    var carpetaEnum = new Enumerator(fso.GetFolder(desktop).SubFolders);
-    for (; !carpetaEnum.atEnd(); carpetaEnum.moveNext()) {
-      var nombre = carpetaEnum.item().Name;
-      if (nombre.match(/^Año \d{4}$/)) {
-        anios.push(nombre.replace("Año ", ""));
-      }
-    }
-  } catch (e) {}
-  anios.sort();
-  for (var i = 0; i < anios.length; i++) {
-    var opt = document.createElement("option");
-    opt.value = anios[i];
-    opt.text = anios[i];
-    select.appendChild(opt);
-  }
-}
-
-// LLENA CASOS según año seleccionado
-function llenarCasosOficio() {
-  var anio = document.getElementById('select-anio-oficio').value;
-  var selectCaso = document.getElementById('select-caso-oficio');
-  selectCaso.innerHTML = "";
-  if (!anio) {
-    llenarSubcasosOficio();
-    return;
-  }
-  var ruta = desktop + "\\Año " + anio;
-  if (!fso.FolderExists(ruta)) {
-    llenarSubcasosOficio();
-    return;
-  }
-  var casos = [];
-  try {
-    var casoEnum = new Enumerator(fso.GetFolder(ruta).SubFolders);
-    for (; !casoEnum.atEnd(); casoEnum.moveNext()) {
-      casos.push(casoEnum.item().Name);
-    }
-  } catch (e) {}
-  casos.sort();
-  for (var i = 0; i < casos.length; i++) {
-    var opt = document.createElement("option");
-    opt.value = casos[i];
-    opt.text = casos[i];
-    selectCaso.appendChild(opt);
-  }
-  // Selecciona por defecto el primer caso, si hay
-  if (selectCaso.options.length > 0) selectCaso.selectedIndex = 0;
-  llenarSubcasosOficio();
-}
-
-// LLENA SUBCASOS según caso seleccionado
-function llenarSubcasosOficio() {
-  var fso2 = new ActiveXObject("Scripting.FileSystemObject"); // Fuerza nuevo objeto
-  var anio = document.getElementById('select-anio-oficio').value;
-  var caso = document.getElementById('select-caso-oficio').value;
-  var selectSubcaso = document.getElementById('select-subcaso-oficio');
-  selectSubcaso.innerHTML = "";
-  var optVacio = document.createElement("option");
-  optVacio.value = "";
-  optVacio.text = "(Sin subcaso)";
-  selectSubcaso.appendChild(optVacio);
-
-  if (!anio || !caso) return;
-  var ruta = desktop + "\\Año " + anio + "\\" + caso;
-  if (!fso2.FolderExists(ruta)) return;
-  var subcasos = [];
-  try {
-    var subcasoEnum = new Enumerator(fso2.GetFolder(ruta).SubFolders);
-    for (; !subcasoEnum.atEnd(); subcasoEnum.moveNext()) {
-      subcasos.push(subcasoEnum.item().Name);
-    }
-  } catch (e) {}
-  subcasos.sort();
-  for (var i = 0; i < subcasos.length; i++) {
-    var opt = document.createElement("option");
-    opt.value = subcasos[i];
-    opt.text = subcasos[i];
-    selectSubcaso.appendChild(opt);
-  }
-}
-
-// INICIALIZACIÓN AL ENTRAR A LA SECCIÓN (llama esto siempre que muestres "Crear oficios")
-function inicializarCrearOficio() {
-  llenarAniosOficio();
-  llenarCasosOficio();
-  llenarSubcasosOficio();
-}
-
-// ASOCIA EVENTOS SOLO UNA VEZ (esto debe ir en tu DOMContentLoaded o <body onload="...">)
-document.addEventListener('DOMContentLoaded', function () {
-  var selAnioOf = document.getElementById('select-anio-oficio');
-  var selCasoOf = document.getElementById('select-caso-oficio');
-  if (selAnioOf) selAnioOf.onchange = llenarCasosOficio;
-  if (selCasoOf) selCasoOf.onchange = llenarSubcasosOficio;
-});
-
-// SI USAS UNA FUNCIÓN "mostrarSeccion", agrega esto para inicializar el módulo
-const mostrarSeccionOriginal = typeof mostrarSeccion !== "undefined" ? mostrarSeccion : function(){};
-mostrarSeccion = function (seccion) {
-  if (typeof mostrarSeccionOriginal === "function") {
-    mostrarSeccionOriginal(seccion);
-  }
-  if (seccion === "crear-oficios") {
-    inicializarCrearOficio();
-  }
-};
     function buscarPorAnio(pagina) {
     var anio = document.getElementById("buscar-anio-flex-input").value;
     var filtro = document.getElementById("filtro-buscar-caso-anio").value.trim().toLowerCase();
@@ -1633,28 +1524,7 @@ function seleccionarFormatoOficio(nombre) {
   cargarFormatosOficios(); // Esto fuerza a refrescar la lista y resaltar el seleccionado
 }
 
-function cargarAniosOficio() {
-  var sel = document.getElementById("select-anio-oficio");
-  sel.innerHTML = "";
-  var anios = [];
-  try {
-    var carpetaEnum = new Enumerator(fso.GetFolder(desktop).SubFolders);
-    for (; !carpetaEnum.atEnd(); carpetaEnum.moveNext()) {
-      var nombre = carpetaEnum.item().Name;
-      if (nombre.match(/^Año \d{4}$/)) anios.push(nombre.replace("Año ", ""));
-    }
-  } catch(e) {
-    alert("Error leyendo años: " + e.message);
-  }
-  anios.sort();
-  for (var i = 0; i < anios.length; i++) {
-    var opt = document.createElement("option");
-    opt.value = anios[i];
-    opt.text = anios[i];
-    sel.appendChild(opt);
-  }
-  cargarCasosOficio();
-}
+
 
 
 
@@ -1722,19 +1592,6 @@ function cargarSubcasosOficio() {
     sel.appendChild(opt);
   }
 }
-
-// Utilidad para mostrar mensajes de depuración
-function setDebug(msg) {
-  var debugDiv = document.getElementById("casos-debug");
-  if (debugDiv) debugDiv.innerText = msg;
-}
-
-// Eventos encadenados
-document.getElementById("select-anio-oficio").onchange = cargarCasosOficio;
-document.getElementById("select-caso-oficio").onchange = cargarSubcasosOficio;
-
-// Llama cargarAniosOficio() al abrir la sección
-// cargarAniosOficio();
 
 // Filtrar y paginar
 function filtrarFormatos() {
@@ -1861,77 +1718,62 @@ function cargarSubcasosOficio(anio, caso) {
 }
 
 function copiarYCrearOficio() {
-  // Obtener valores del formulario
-  var anio = document.getElementById('select-anio-oficio').value;
-  var caso = document.getElementById('select-caso-oficio').value;
-  var subcaso = document.getElementById('select-subcaso-oficio').value;
+  // Obtener los valores seleccionados
+  var casoSel = document.getElementById('select-caso-oficio-principal').value;
+  if (!casoSel) {
+    alert("Debe seleccionar un caso.");
+    return;
+  }
+  var partes = casoSel.split("||");
+  var anio = partes[0];
+  var caso = partes[1];
+  var subcaso = document.getElementById('select-subcaso-oficio-principal').value;
   var nuevoNombre = document.getElementById('nuevo-nombre-oficio').value.trim();
 
-  // Encuentra el formato seleccionado
-  var formatoSeleccionado = null;
-  for (var i = 0; i < formatosFiltrados.length; i++) {
-    var elemento = document.getElementById('formato-item-' + i);
-    if (elemento && elemento.classList.contains('selected')) {
-      formatoSeleccionado = formatosFiltrados[i];
-      break;
-    }
-  }
-
-  // Validaciones
-  if (!formatoSeleccionado) {
-    alert("Seleccione un formato para copiar.");
-    return;
-  }
-  if (!anio || !caso) {
-    alert("Seleccione año y caso destino.");
-    return;
-  }
+  // Validaciones de campos
   if (!nuevoNombre) {
-    alert("Ingrese el nuevo nombre para el archivo.");
+    alert("Debe escribir un nombre para el nuevo oficio.");
     return;
   }
   if (nuevoNombre.match(/[\\\/:*?"<>|]/)) {
-    alert("El nombre nuevo contiene caracteres no permitidos.");
+    alert("El nombre contiene caracteres no permitidos.");
     return;
   }
 
-  // Ruta de origen (formato)
-  var rutaFormato = desktop + "\\Formatos\\" + formatoSeleccionado;
-
-  // Ruta de destino (incluye subcaso si aplica)
-  var rutaDestino = desktop + "\\Año " + anio + "\\" + caso;
-  if (subcaso && subcaso !== "") {
-    rutaDestino += "\\" + subcaso;
-  }
-
-  // Verifica que la carpeta destino exista
-  if (!fso.FolderExists(rutaDestino)) {
-    alert("La carpeta de destino no existe: " + rutaDestino);
+  // Validar formato seleccionado
+  if (!formatoSeleccionado) {
+    alert("Debe seleccionar un formato.");
     return;
   }
 
-  // Obtiene extensión del formato original
-  var ext = "";
-  var idx = formatoSeleccionado.lastIndexOf(".");
-  if (idx !== -1) {
-    ext = formatoSeleccionado.substring(idx);
+  // Determinar la ruta destino
+  var rutaBase = desktop + "\\Año " + anio + "\\" + caso;
+  if (subcaso) {
+    rutaBase += "\\" + subcaso;
+  }
+  if (!fso.FolderExists(rutaBase)) {
+    alert("No existe la carpeta destino: " + rutaBase);
+    return;
   }
 
-  var nuevoArchivo = rutaDestino + "\\" + nuevoNombre + ext;
+  // Ruta del nuevo archivo
+  var extension = formatoSeleccionado.split('.').pop();
+  var rutaDestino = rutaBase + "\\" + nuevoNombre + "." + extension;
 
-  // Verifica si ya existe archivo con ese nombre
-  if (fso.FileExists(nuevoArchivo)) {
-    if (!confirm("El archivo ya existe. ¿Desea sobreescribirlo?")) return;
+  // Verificar si ya existe
+  if (fso.FileExists(rutaDestino)) {
+    var sobreescribir = confirm("Ya existe un archivo con ese nombre en el destino. ¿Desea sobrescribirlo?");
+    if (!sobreescribir) return;
   }
 
-  // Copia el archivo
+  // Copiar el archivo
   try {
-    fso.CopyFile(rutaFormato, nuevoArchivo, true);
-    // Abre el archivo copiado
-    shell.Run('"' + nuevoArchivo + '"');
-    alert("Archivo copiado exitosamente en:\n" + nuevoArchivo);
+    fso.CopyFile(formatoSeleccionado, rutaDestino, true);
+    // Abrir el archivo copiado
+    shell.Run('"' + rutaDestino + '"');
+    alert("Oficio creado correctamente:\n" + rutaDestino);
   } catch (e) {
-    alert("Error al copiar el archivo:\n" + e.message);
+    alert("Error al copiar el archivo: " + e.message);
   }
 }
 
