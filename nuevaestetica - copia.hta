@@ -542,6 +542,20 @@
   color: #285080;
   pointer-events: none;
 }
+//PANEL LATERAL PAGINACIÓN
+#lista-panel-selector button.active {
+  background: #3765c0;
+  color: #fff;
+  font-weight: bold;
+}
+#lista-panel-selector button {
+  background: #f0f3fb;
+  border: 1px solid #bccce7;
+  border-radius: 5px;
+  margin: 0 2px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
 
     h1, h2 {
       color: #17406a;
@@ -808,12 +822,17 @@
   var resultadosPorPaginaAvanzada = 5;
 
   //VARIABES SECCIÓN FORMATOS
-var formatosDetectados = [];
-var formatosFiltrados = [];
-var paginaFormatos = 1;
-var formatosPorPagina = 10;
-var formatoSeleccionado = null;
+  var formatosDetectados = [];
+  var formatosFiltrados = [];
+  var paginaFormatos = 1;
+  var formatosPorPagina = 10;
+  var formatoSeleccionado = null;
 
+  //VARIABLES PAGINACIÓN PANEL LATERAL
+// --- PAGINACIÓN PANEL LATERAL SUBCASOS ---
+var paginaActualPanelSubcasos = 1;
+var subcasosPanelFiltrados = [];
+var subcasosPanelPorPagina = 8;
 
   // Sección y menú
 function mostrarSeccion(seccion) {
@@ -1914,41 +1933,75 @@ function cargarSubcasosOficio(anio, caso) {
 }
 
 function copiarYCrearOficio() {
-  var anio = document.getElementById("select-anio-oficio").value;
-  var caso = document.getElementById("select-caso-oficio").value;
-  var subcaso = document.getElementById('subcaso-oficio-seleccionado').innerText;
-  var nombreNuevo = document.getElementById("nuevo-nombre-oficio").value.trim();
-  if (!anio || !caso || !nombreNuevo || !formatoSeleccionado) {
-    alert("Completa todos los datos.");
+  var formato = formatoSeleccionado;
+  var anio = document.getElementById('select-anio-oficio').value;
+  var caso = document.getElementById('select-caso-oficio').value;
+  var selectSubcaso = document.getElementById('select-subcaso-oficio');
+  var subcaso = selectSubcaso ? selectSubcaso.value.trim() : "";
+  var nuevoNombre = document.getElementById('nuevo-nombre-oficio').value.trim();
+
+  // LIMPIEZA: quitar "Eliminar" por si acaso
+  if (subcaso) {
+    subcaso = subcaso.replace(/Eliminar.*$/i, '').trim();
+  }
+
+  var feedbackMsg = "";
+  if (!formato || typeof formato !== "string" || formato.length < 4) feedbackMsg += "Seleccione un formato.\n";
+  if (!anio) feedbackMsg += "Seleccione un año.\n";
+  if (!caso) feedbackMsg += "Seleccione un caso.\n";
+  if (!nuevoNombre) feedbackMsg += "Ingrese un nombre para el archivo.\n";
+  if (nuevoNombre.match(/[\\\/:*?"<>|]/)) feedbackMsg += 'El nombre no puede contener caracteres especiales (\\ / : * ? " < > |)\n';
+
+  if (feedbackMsg) {
+    alert("Completa todos los datos.\n\n" + feedbackMsg);
     return;
   }
-  // Validar caracteres prohibidos
-  if (/[\\\/:*?"<>|]/.test(nombreNuevo)) {
-    alert("El nombre no puede tener caracteres especiales.");
-    return;
+
+  var destino = desktop + "\\Año " + anio + "\\" + caso;
+  if (subcaso) {
+    destino += "\\" + subcaso;
   }
-  var rutaDestino = desktop + "\\Año " + anio + "\\" + caso;
-  if (subcaso) rutaDestino += "\\" + subcaso;
-  if (!fso.FolderExists(rutaDestino)) {
+
+  if (!fso.FolderExists(destino)) {
     try {
-      fso.CreateFolder(rutaDestino);
+      fso.CreateFolder(destino);
     } catch (e) {
-      alert("No se pudo crear la carpeta destino: " + rutaDestino);
+      alert("No se pudo crear la carpeta destino: " + destino);
       return;
     }
   }
-  var ext = formatoSeleccionado.Nombre.split('.').pop();
-  var rutaFinal = rutaDestino + "\\" + nombreNuevo + "." + ext;
+
+  var extension = ".docx";
+  if (formato && typeof formato === "string") {
+    var punto = formato.lastIndexOf(".");
+    if (punto !== -1) {
+      var ext = formato.substr(punto).toLowerCase();
+      if (ext === ".doc" || ext === ".docx" || ext === ".dot" || ext === ".dotx" || ext === ".odt") {
+        extension = ext;
+      }
+    }
+  }
+
+  var destinoArchivo = destino + "\\" + nuevoNombre + extension;
+
+  if (fso.FileExists(destinoArchivo)) {
+    alert("Ya existe un archivo con ese nombre en el destino.");
+    return;
+  }
+
   try {
-    fso.CopyFile(formatoSeleccionado.Ruta, rutaFinal, false);
-    shell.Run('"' + rutaFinal + '"');
-    alert("Archivo creado correctamente.");
+    var word = new ActiveXObject("Word.Application");
+    word.Visible = true;
+    var doc = word.Documents.Add(formato);
+    doc.SaveAs(destinoArchivo);
+    mostrarEstadisticasTabla();
+    alert("Oficio creado exitosamente en:\n" + destinoArchivo);
+    document.getElementById('nuevo-nombre-oficio').value = "";
     volverPaso1();
   } catch(e) {
-    alert("Error al copiar el archivo: " + e.message);
+    alert("Error al crear el archivo:\n" + e.message);
   }
 }
-
 // Inicializar cuando se cargue el apartado
 cargarFormatosOficios();
 
@@ -2077,17 +2130,18 @@ function llenarSubcasosOficio() {
   try {
     var subEnum = new Enumerator(fso.GetFolder(ruta).SubFolders);
     for (; !subEnum.atEnd(); subEnum.moveNext()) {
-      subcasos.push(subEnum.item().Name);
+      subcasos.push(subEnum.item().Name); // <-- AQUÍ
     }
   } catch(e) {}
   subcasos.sort();
   for (var i=0; i<subcasos.length; i++) {
     var opt = document.createElement("option");
-    opt.value = subcasos[i];
-    opt.text = subcasos[i];
+    opt.value = subcasos[i]; // <-- AQUÍ
+    opt.text = subcasos[i];  // <-- AQUÍ
     selectSubcaso.appendChild(opt);
   }
 }
+
 
 // Panel lateral universal para seleccionar subcaso/caso (HTA compatible)
 var _callbackSeleccionUniversal = null;
@@ -2231,9 +2285,159 @@ function abrirSelectorSubcasoOficio() {
   }
   // Si no hay subcasos, permite opción "(Sin subcaso)"
   if (subcasos.length == 0) subcasos.push({nombre: "(Sin subcaso)", cantidadWords: 0});
-  abrirPanelSelector(subcasos, "Selecciona un subcaso", function(nombre){
-    document.getElementById('subcaso-oficio-seleccionado').innerText = nombre == "(Sin subcaso)" ? "" : nombre;
+
+  // Guarda la lista completa y resetea a página 1
+  subcasosPanelListaCompleta = subcasos;
+  paginaActualPanelSubcasos = 1;
+
+  abrirPanelSelectorPaginado(subcasosPanelListaCompleta, "Selecciona un subcaso", function(nombre){
+    // Oculta el botón y muestra el nombre seleccionado
+    document.getElementById('boton-subcaso-oficio').style.display = "none";
+    mostrarSubcasoSeleccionado(nombre);
   });
+}
+
+function mostrarSubcasoSeleccionado(nombre) {
+  var cont = document.getElementById('subcaso-oficio-seleccionado');
+  cont.innerHTML = 
+    '<div style="display:flex;align-items:center;gap:10px;">' +
+      '<span style="font-weight:600;color:#17406a;">' + nombre + '</span>' +
+      '<button type="button" onclick="quitarSeleccionSubcaso()" ' +
+      'style="background:#b00020;color:#fff;border:none;padding:2px 10px 2px 10px;border-radius:5px;cursor:pointer;font-weight:600;font-size:0.93em;margin-left:30px;">Eliminar</button>' +
+    '</div>';
+}
+
+function quitarSeleccionSubcaso() {
+  document.getElementById('subcaso-oficio-seleccionado').innerHTML = "";
+  document.getElementById('boton-subcaso-oficio').style.display = "";
+}
+
+// PAGINACIÓN
+function llenarPanelSelectorSubcasos(listaSubcasos) {
+  // Filtrado (si hay buscador)
+  var filtro = document.getElementById('buscador-panel-selector').value.toLowerCase();
+  subcasosPanelFiltrados = listaSubcasos.filter(function(subcaso){
+    return subcaso.toLowerCase().indexOf(filtro) !== -1;
+  });
+
+  // Paginación
+  var totalPaginas = Math.ceil(subcasosPanelFiltrados.length / subcasosPanelPorPagina);
+  if (paginaActualPanelSubcasos > totalPaginas) paginaActualPanelSubcasos = 1;
+  var inicio = (paginaActualPanelSubcasos - 1) * subcasosPanelPorPagina;
+  var fin = inicio + subcasosPanelPorPagina;
+  var subcasosPagina = subcasosPanelFiltrados.slice(inicio, fin);
+
+  // Renderiza subcasos
+  var listaDiv = document.getElementById('lista-panel-selector');
+  listaDiv.innerHTML = '';
+  subcasosPagina.forEach(function(subcaso) {
+    var div = document.createElement('div');
+    div.className = 'tarjeta-panel-selector';
+    div.textContent = subcaso;
+    div.onclick = function() { seleccionarSubcasoDesdePanel(subcaso); };
+    listaDiv.appendChild(div);
+  });
+
+  // Renderiza paginación
+  var paginacionHTML = '';
+  if (totalPaginas > 1) {
+    paginacionHTML += '<div style="text-align:center;margin-top:8px;">';
+    for (var i = 1; i <= totalPaginas; i++) {
+      paginacionHTML += '<button onclick="cambiarPaginaPanelSubcasos(' + i + ')" ' +
+        (i === paginaActualPanelSubcasos ? 'class="active"' : '') + '>' + i + '</button> ';
+    }
+    paginacionHTML += '</div>';
+  }
+  listaDiv.innerHTML += paginacionHTML;
+}
+function cambiarPaginaPanelSubcasos(pagina) {
+  paginaActualPanelSubcasos = pagina;
+  // Vuelve a cargar la lista con la página seleccionada
+  // Debes pasar el array original de subcasos, ajústalo según tu lógica
+  llenarPanelSelectorSubcasos(subcasosPanelFiltrados.length ? subcasosPanelFiltrados : []);
+}
+function abrirPanelSelectorPaginado(listaSubcasos, titulo, callbackSeleccion) {
+  // Guarda el callback si lo necesitas usar en otro lado
+  window.__callbackSeleccionSubcasoPanel = callbackSeleccion;
+
+  // Renderiza la lista actual (primera página)
+  renderPanelSubcasosPaginado();
+
+  // Muestra el panel
+  document.getElementById('panel-lateral-selector').style.right = "0";
+  document.getElementById('panel-lateral-titulo').innerText = titulo;
+
+  // Vincula buscador si existe
+  var buscador = document.getElementById('buscador-panel-selector');
+  if (buscador) {
+    buscador.onkeyup = function() {
+      paginaActualPanelSubcasos = 1;
+      renderPanelSubcasosPaginado();
+    }
+  }
+
+  // Vincula cerrar
+  document.getElementById('cerrar-panel-selector-btn').onclick = function() {
+    document.getElementById('panel-lateral-selector').style.right = "-410px";
+  }
+}
+
+// Renderiza lista y paginación
+function renderPanelSubcasosPaginado() {
+  var buscador = document.getElementById('buscador-panel-selector');
+  var filtro = buscador ? buscador.value.toLowerCase() : "";
+  var filtrados = subcasosPanelListaCompleta.filter(function(subc){
+    return subc.nombre.toLowerCase().indexOf(filtro) !== -1;
+  });
+
+  var totalPaginas = Math.ceil(filtrados.length / subcasosPanelPorPagina) || 1;
+  if (paginaActualPanelSubcasos > totalPaginas) paginaActualPanelSubcasos = 1;
+  var inicio = (paginaActualPanelSubcasos - 1) * subcasosPanelPorPagina;
+  var fin = inicio + subcasosPanelPorPagina;
+  var pagina = filtrados.slice(inicio, fin);
+
+  var listaDiv = document.getElementById('lista-panel-selector');
+  listaDiv.innerHTML = '';
+
+  if (filtrados.length === 0) {
+    // Aquí se muestra el mensaje cuando no hay resultados
+    var msg = document.createElement('div');
+    msg.style = "color:#b00020;font-weight:bold;padding:18px 0;text-align:center;";
+    msg.innerText = 'No hay elementos que coincidan';
+    listaDiv.appendChild(msg);
+    return; // No renderiza paginación ni nada más
+  }
+
+  pagina.forEach(function(subcaso){
+    var div = document.createElement('div');
+    div.className = 'tarjeta-panel-selector';
+    div.innerHTML = '<span class="nombre-caso-card">' + subcaso.nombre + '</span>'
+                  + '<span class="words-caso-card">Archivos Word: ' + subcaso.cantidadWords + '</span>';
+    div.onclick = function() {
+      if(window.__callbackSeleccionSubcasoPanel) window.__callbackSeleccionSubcasoPanel(subcaso.nombre);
+      document.getElementById('panel-lateral-selector').style.right = "-410px";
+    };
+    listaDiv.appendChild(div);
+  });
+
+  // Paginación
+  if (totalPaginas > 1) {
+    var paginacion = document.createElement('div');
+    paginacion.style = "text-align:center;margin-top:8px;";
+    for (var i = 1; i <= totalPaginas; i++) {
+      var btn = document.createElement('button');
+      btn.textContent = i;
+      if (i === paginaActualPanelSubcasos) btn.className = "active";
+      btn.onclick = (function(p){
+        return function(){
+          paginaActualPanelSubcasos = p;
+          renderPanelSubcasosPaginado();
+        }
+      })(i);
+      paginacion.appendChild(btn);
+    }
+    listaDiv.appendChild(paginacion);
+  }
 }
 
 // Utilidad
