@@ -305,6 +305,150 @@
       border:1px solid #d0d4da;
       box-shadow: none;
     }
+//Sección para forma de crear oficios.
+/* Mantiene la base de tu estilo original pero lo hace más moderno y agradable */
+
+/* Bloque principal */
+.form-block-oficio {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px #17406a13;
+  border: 1.5px solid #d0d4da;
+  max-width: 540px;
+  margin: 36px auto 0 auto;
+  padding: 30px 28px 26px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 23px;
+}
+
+/* Título */
+.form-title-oficio {
+  color: #17406a;
+  font-size: 1.21em;
+  font-weight: 700;
+  letter-spacing: .2px;
+  margin-bottom: 5px;
+  text-align: left;
+  border-left: 4px solid #205085;
+  padding-left: 14px;
+  padding-top: 2px;
+  background: linear-gradient(to right, #eaf0f7 0%, #fff 100%);
+  border-radius: 7px 0 0 7px;
+  box-shadow: 0 2px 8px #17406a08;
+}
+
+/* Paso header */
+.paso-header {
+  color: #205085;
+  font-size: 1.06em;
+  font-weight: 600;
+  margin-bottom: 11px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.paso-numero {
+  background: #17406a;
+  color: #fff;
+  font-weight: bold;
+  font-size: 1.01em;
+  border-radius: 50%;
+  width: 1.65em;
+  height: 1.65em;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 7px;
+  box-shadow: 0 2px 6px #17406a15;
+}
+
+/* Inputs y selects grandes */
+.input-grande {
+  width: 100%;
+  padding: 10px 13px;
+  font-size: 1.07em;
+  border-radius: 8px;
+  border: 1.5px solid #b7ccee;
+  background: #f5f7fa;
+  margin-bottom: 6px;
+  transition: border 0.18s, background 0.13s;
+  box-sizing: border-box;
+}
+.input-grande:focus {
+  border: 2px solid #17406a;
+  background: #fff;
+  outline: none;
+}
+
+/* Lista de formatos */
+.lista-formatos {
+  background: #f7fafd;
+  border-radius: 10px;
+  padding: 18px 18px;
+  min-height: 70px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 12px #17406a10;
+}
+
+/* Botones */
+.boton-oficio {
+  background: linear-gradient(90deg, #17406a 60%, #205085 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 0;
+  font-size: 1.08em;
+  font-weight: 700;
+  width: 100%;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  transition: background 0.17s, box-shadow 0.15s, transform 0.09s;
+  box-shadow: 0 2px 8px #17406a22;
+}
+.boton-oficio:hover {
+  background: linear-gradient(90deg, #205085 60%, #17406a 100%);
+  box-shadow: 0 4px 16px #17406a22;
+  transform: translateY(-2px) scale(1.015);
+}
+.boton-secundario {
+  background: #eaf0f7;
+  color: #17406a;
+  border: 1.5px solid #b7ccee;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 10px 0;
+  width: 100%;
+  font-size: 1em;
+  margin-top: 4px;
+  margin-bottom: 3px;
+  transition: background 0.11s, color 0.13s, border 0.11s;
+}
+.boton-secundario:hover {
+  background: #d0d4da;
+  color: #17406a;
+  border: 1.5px solid #17406a;
+}
+
+/* Tips */
+.form-tip-oficio {
+  background: #eaf2fb;
+  border-left: 4px solid #285080;
+  color: #285080;
+  margin-top: 18px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 1em;
+  box-shadow: 0 2px 8px #17406a08;
+}
+
+/* Detalle: los labels */
+#seccion-crear-oficios label {
+  font-weight: 600;
+  color: #17406a;
+  margin-bottom: 5px;
+  display: block;
+}
 #seccion-crear-oficios .form-block {
   max-width: 500px;
   margin: 35px auto 0 auto;
@@ -346,7 +490,6 @@
   color: #fff;
   font-weight: bold;
 }
-
     h1, h2 {
       color: #17406a;
       margin-top: 0;
@@ -465,43 +608,55 @@
   </div>
 </div>
 
-<!--SECCIÓN DE FORMATOS -->
+<!--SECCIÓN DE CREAR OFICIOS -->
+<!-- SECCIÓN CREAR OFICIOS MEJORADA -->
 <div id="seccion-crear-oficios" style="display:none;">
-  <div class="form-block">
-    <!-- PASO 1: Selección de formato -->
-<div id="paso1-elegir-formato">
-  <div style="text-align:center;">
-    <div style="font-size:1.3em;font-weight:bold;margin-bottom:14px;">ELIJA UN FORMATO</div>
-    <input id="filtro-formatos" type="text" placeholder="Filtrar por nombre..." style="width:80%;padding:7px;font-size:1.05em;margin-bottom:8px;" onkeyup="filtrarFormatos()">
-    <div style="color:#b00020;margin-bottom:5px;">Formatos detectados: <span id="cantidad-formatos"></span></div>
-    <div id="lista-formatos" style="background:#f7fafd;border-radius:10px;padding:16px 18px;min-height:70px;margin-bottom:15px;text-align:left;"></div>
+  <div class="form-block form-block-oficio">
+    <div class="form-title form-title-oficio">
+      Crear Oficios
+    </div>
+    <!-- Paso 1: Selección de formato -->
+    <div id="paso1-elegir-formato">
+      <div style="text-align:left;">
+        <div class="paso-header"><span class="paso-numero">1</span> Elija un formato</div>
+        <input id="filtro-formatos" type="text" placeholder="Filtrar por nombre..." class="input-grande" onkeyup="filtrarFormatos()">
+        <div style="color:#b00020;margin-bottom:7px;">Formatos detectados: <span id="cantidad-formatos"></span></div>
+        <div id="lista-formatos" class="lista-formatos"></div>
+      </div>
+    </div>
+    <!-- Paso 2: Elegir destino y nombre -->
+    <div id="paso2-elegir-destino" style="display:none;max-width:440px;margin:0 auto;">
+      <div class="paso-header"><span class="paso-numero">2</span> Elija destino y nombre</div>
+      <div class="field-block">
+        <label><b>Año:</b></label>
+        <select id="select-anio-oficio" onchange="llenarCasosOficio()" class="input-grande"></select>
+      </div>
+      <div class="field-block">
+        <label><b>Caso:</b></label>
+        <select id="select-caso-oficio" onchange="llenarSubcasosOficio()" class="input-grande"></select>
+      </div>
+      <div class="field-block">
+        <label><b>Subcaso (opcional):</b></label>
+        <select id="select-subcaso-oficio" class="input-grande">
+          <option value="">(Sin subcaso)</option>
+        </select>
+      </div>
+      <div class="field-block">
+        <label><b>Nuevo nombre (sin extensión):</b></label>
+        <input id="nuevo-nombre-oficio" type="text" placeholder="Ejemplo: Petición Juan" class="input-grande">
+      </div>
+      <button class="boton boton-oficio" onclick="copiarYCrearOficio()">Crear archivo</button>
+      <button class="boton boton-secundario" onclick="volverPaso1()">Volver</button>
+    </div>
+    <div class="form-tip form-tip-oficio">
+      <b>¿Cómo funciona?</b><br>
+      1. Elija un formato de la lista.<br>
+      2. Seleccione el destino (año/caso/subcaso) y escriba el nombre.<br>
+      3. Pulse "Crear archivo".<br>
+      <span style="color:#17406a;">¡Organice sus documentos en segundos!</span>
+    </div>
   </div>
 </div>
-<!-- Paso 2: Elegir destino y nombre -->
-<div id="paso2-elegir-destino" style="display:none;max-width:420px;margin:0 auto;">
-  <div style="font-size:1.15em;font-weight:bold;margin-bottom:16px;text-align:center;">ELIJA DESTINO Y NOMBRE</div>
-  <div style="margin-bottom:8px;">
-    <label><b>Año:</b></label>
-    <select id="select-anio-oficio" onchange="llenarCasosOficio()" style="width:100%;padding:6px;font-size:1em;"></select>
-  </div>
-  <div style="margin-bottom:8px;">
-    <label><b>Caso:</b></label>
-    <select id="select-caso-oficio" onchange="llenarSubcasosOficio()" style="width:100%;padding:6px;font-size:1em;"></select>
-  </div>
-  <div style="margin-bottom:8px;">
-    <label><b>Subcaso (opcional):</b></label>
-    <select id="select-subcaso-oficio" style="width:100%;padding:6px;font-size:1em;">
-      <option value="">(Sin subcaso)</option>
-    </select>
-  </div>
-  <div style="margin-bottom:14px;">
-    <label><b>Nuevo nombre (sin extensión):</b></label>
-    <input id="nuevo-nombre-oficio" type="text" placeholder="Ejemplo: Petición Juan" style="width:100%;padding:7px;font-size:1em;">
-  </div>
-  <button onclick="copiarYCrearOficio()" style="width:100%;padding:10px;font-size:1.07em;margin-bottom:10px;">Crear archivo</button>
-  <button onclick="volverPaso1()" style="width:100%;padding:7px;font-size:.98em;background:#eaf0f7;border:1px solid #b7ccee;">Volver</button>
-</div>
-
 <!-- SECCIÓN BUSCAR CASO (fragmento modificado) -->
 <div id="seccion-buscar-caso" style="display:none;">
   <div class="form-block">
