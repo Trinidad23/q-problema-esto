@@ -468,48 +468,38 @@
 <!--SECCIÓN DE FORMATOS -->
 <div id="seccion-crear-oficios" style="display:none;">
   <div class="form-block">
-    <div class="form-title">Crear oficios</div>
-    <div style="font-size:1.12em;font-weight:500;margin-bottom:10px;">
-      Buscar formato <span style="color:#213c5a;font-weight:700;">(en carpeta <b>Formatos</b> del Escritorio)</span>
-    </div>
-    <!-- Filtro de formatos -->
-    <input id="filtro-formatos" type="text" placeholder="Filtrar por nombre..."
-           style="width:100%;font-size:1em;padding:9px 12px;margin-bottom:9px;border-radius:7px;border:1.5px solid #3772b3;box-sizing:border-box;"
-           onkeyup="filtrarFormatos()">
-    <div style="color:#b00020;margin-bottom:5px;font-weight:500;">
-      <span id="cantidad-formatos">Formatos detectados: 0</span>
-    </div>
-    <!-- Lista paginada de formatos -->
-    <div id="lista-formatos" style="background:#f8fafc;border-radius:10px;padding:19px 20px;min-height:90px;margin-bottom:15px;"></div>
-    <!-- Selección de destino adaptada -->
-    <div style="margin-bottom:13px;font-weight:500;">Destino:</div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
-      <div style="flex:1;">
-        <label style="font-size:.98em;font-weight:500;">Caso:</label><br>
-        <select id="select-caso-oficio-principal" style="min-width:110px;padding:6px 7px;border-radius:6px;border:1px solid #bccce7;font-size:1em;" onchange="onSeleccionarCasoOficio()"></select>
-      </div>
-    </div>
-    <div id="oficio-secundarios" style="display:none;">
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
-        <div>
-          <label style="font-size:.98em;font-weight:500;">Año:</label><br>
-          <input id="anio-oficio-secundario" type="text" readonly style="min-width:80px;padding:6px 7px;border-radius:6px;border:1px solid #bccce7;font-size:1em;background:#f5f7fa;">
-        </div>
-        <div>
-          <label style="font-size:.98em;font-weight:500;">Subcaso (opcional):</label><br>
-          <select id="select-subcaso-oficio-principal" style="min-width:130px;padding:6px 7px;border-radius:6px;border:1px solid #bccce7;font-size:1em;">
-            <option value="">(Sin subcaso)</option>
-          </select>
-        </div>
-      </div>
-      <!-- Nuevo nombre -->
-      <div style="margin-bottom:7px;font-weight:500;">Nuevo nombre (sin extensión):</div>
-      <input id="nuevo-nombre-oficio" type="text" placeholder="Ejemplo: Petición Juan"
-             style="width:100%;font-size:1em;padding:9px 12px;margin-bottom:18px;border-radius:7px;border:1.5px solid #3772b3;box-sizing:border-box;">
-      <!-- Botón de acción -->
-      <button class="boton" style="width:100%;font-size:1.12em;padding:13px 0;" onclick="copiarYCrearOficio()">Copiar y abrir formato</button>
-    </div>
+    <!-- PASO 1: Selección de formato -->
+<div id="paso1-elegir-formato">
+  <div style="text-align:center;">
+    <div style="font-size:1.3em;font-weight:bold;margin-bottom:14px;">ELIJA UN FORMATO</div>
+    <input id="filtro-formatos" type="text" placeholder="Filtrar por nombre..." style="width:80%;padding:7px;font-size:1.05em;margin-bottom:8px;" onkeyup="filtrarFormatos()">
+    <div style="color:#b00020;margin-bottom:5px;">Formatos detectados: <span id="cantidad-formatos"></span></div>
+    <div id="lista-formatos" style="background:#f7fafd;border-radius:10px;padding:16px 18px;min-height:70px;margin-bottom:15px;text-align:left;"></div>
   </div>
+</div>
+<!-- Paso 2: Elegir destino y nombre -->
+<div id="paso2-elegir-destino" style="display:none;max-width:420px;margin:0 auto;">
+  <div style="font-size:1.15em;font-weight:bold;margin-bottom:16px;text-align:center;">ELIJA DESTINO Y NOMBRE</div>
+  <div style="margin-bottom:8px;">
+    <label><b>Año:</b></label>
+    <select id="select-anio-oficio" onchange="llenarCasosOficio()" style="width:100%;padding:6px;font-size:1em;"></select>
+  </div>
+  <div style="margin-bottom:8px;">
+    <label><b>Caso:</b></label>
+    <select id="select-caso-oficio" onchange="llenarSubcasosOficio()" style="width:100%;padding:6px;font-size:1em;"></select>
+  </div>
+  <div style="margin-bottom:8px;">
+    <label><b>Subcaso (opcional):</b></label>
+    <select id="select-subcaso-oficio" style="width:100%;padding:6px;font-size:1em;">
+      <option value="">(Sin subcaso)</option>
+    </select>
+  </div>
+  <div style="margin-bottom:14px;">
+    <label><b>Nuevo nombre (sin extensión):</b></label>
+    <input id="nuevo-nombre-oficio" type="text" placeholder="Ejemplo: Petición Juan" style="width:100%;padding:7px;font-size:1em;">
+  </div>
+  <button onclick="copiarYCrearOficio()" style="width:100%;padding:10px;font-size:1.07em;margin-bottom:10px;">Crear archivo</button>
+  <button onclick="volverPaso1()" style="width:100%;padding:7px;font-size:.98em;background:#eaf0f7;border:1px solid #b7ccee;">Volver</button>
 </div>
 
 <!-- SECCIÓN BUSCAR CASO (fragmento modificado) -->
@@ -599,11 +589,11 @@
   var resultadosPorPaginaAvanzada = 5;
 
   //VARIABES SECCIÓN FORMATOS
-  var formatosDetectados = [];
-  var formatosFiltrados = [];
-  var paginaFormatos = 1;
-  var formatosPorPagina = 10;
-  var formatoSeleccionado = null;
+var formatosDetectados = [];
+var formatosFiltrados = [];
+var paginaFormatos = 1;
+var formatosPorPagina = 10;
+var formatoSeleccionado = null;
 
 
   // Sección y menú
@@ -1465,58 +1455,34 @@ function cambiarPaginaBusquedaAvanzada(direccion) {
 //Funciones sección formato
 // Al abrir la sección, debes llamar a esta función:
 function cargarFormatosOficios() {
-  var posiblesNombres = ["Formatos", "formatos"];
-  var carpetaFormatos = null;
-  for (var i = 0; i < posiblesNombres.length; i++) {
-    var ruta = desktop + "\\" + posiblesNombres[i];
-    if (fso.FolderExists(ruta)) {
-      carpetaFormatos = ruta;
-      break;
-    }
-  }
-  if (!carpetaFormatos) {
-    document.getElementById("cantidad-formatos").innerHTML = "Carpeta 'Formatos' NO encontrada en el Escritorio";
-    document.getElementById("lista-formatos").innerHTML = "<span style='color:#b00020;'>Crea la carpeta 'Formatos' en tu Escritorio.</span>";
-    formatoSeleccionado = null;
-    return;
-  }
-  // Buscar archivos Word
-  var formatos = [];
+  paginaFormatos = 1;
+  formatoSeleccionado = null;
+  document.getElementById("filtro-formatos").value = "";
+  formatosDetectados = [];
+  formatosFiltrados = [];
+  
+  var rutaFormatos = desktop + "\\Formatos";
   try {
-    var filesEnum = new Enumerator(fso.GetFolder(carpetaFormatos).Files);
-    for (; !filesEnum.atEnd(); filesEnum.moveNext()) {
-      var name = filesEnum.item().Name;
-      if (name.match(/\.(docx?|dotx?|doc)$/i)) {
-        formatos.push(name);
+    if (fso.FolderExists(rutaFormatos)) {
+      var formatosEnum = new Enumerator(fso.GetFolder(rutaFormatos).Files);
+      for (; !formatosEnum.atEnd(); formatosEnum.moveNext()) {
+        var archivo = formatosEnum.item();
+        var nombre = archivo.Name;
+        if (nombre.match(/\.(docx?|xlsx?|pdf|odt)$/i)) {
+          formatosDetectados.push({
+            Nombre: nombre,
+            Ruta: archivo.Path
+          });
+        }
       }
     }
-  } catch (e) {}
-  // Filtrar
-  var filtro = document.getElementById("filtro-formatos").value.trim().toLowerCase();
-  var formatosFiltrados = [];
-  for (var i = 0; i < formatos.length; i++) {
-    var f = formatos[i];
-    if (filtro === "" || f.toLowerCase().indexOf(filtro) !== -1) {
-      formatosFiltrados.push(f);
-    }
+  } catch (e) {
+    formatosDetectados = [];
   }
-  formatosDetectados = formatosFiltrados;
-  document.getElementById("cantidad-formatos").innerHTML = "Formatos detectados: " + formatosFiltrados.length;
-  // Render lista seleccionable
-  var div = document.getElementById("lista-formatos");
-  if (formatosFiltrados.length === 0) {
-    div.innerHTML = "<span style='color:#888;'>No hay formatos que coincidan.</span>";
-    formatoSeleccionado = null;
-    return;
-  }
-  var html = "<ul style='padding-left:18px;'>";
-  for (var i = 0; i < formatosFiltrados.length; i++) {
-    var nombre = formatosFiltrados[i];
-    var clase = (nombre === formatoSeleccionado) ? "background:#c9e1ff;font-weight:700;border-radius:7px;" : "";
-    html += '<li style="cursor:pointer;padding:4px 0;' + clase + '" onclick="seleccionarFormatoOficio(\'' + nombre.replace(/'/g,"\\'") + '\')">' + nombre + '</li>';
-  }
-  html += "</ul>";
-  div.innerHTML = html;
+  formatosFiltrados = formatosDetectados.slice();
+  // ACTUALIZAR el contador aquí antes de renderizar
+  document.getElementById("cantidad-formatos").textContent = formatosFiltrados.length;
+  renderizarListaFormatos();
 }
 
 function seleccionarFormatoOficio(nombre) {
@@ -1594,53 +1560,64 @@ function cargarSubcasosOficio() {
 }
 
 // Filtrar y paginar
-function filtrarFormatos() {
-  alert("Formatos detectados al filtrar: " + JSON.stringify(formatosDetectados));
+ function filtrarFormatos() {
   var filtro = document.getElementById("filtro-formatos").value.trim().toLowerCase();
-  formatosFiltrados = formatosDetectados.filter(function(nombre) {
-    return nombre.toLowerCase().indexOf(filtro) !== -1;
+  formatosFiltrados = formatosDetectados.filter(function(f) {
+    return f.Nombre.toLowerCase().indexOf(filtro) !== -1;
   });
   paginaFormatos = 1;
-  renderFormatosPaginados();
+  renderizarListaFormatos();
+  formatoSeleccionado = null;
 }
 
 // Render paginación
-function renderFormatosPaginados() {
-  var lista = document.getElementById("lista-formatos");
-  var cantidad = document.getElementById("cantidad-formatos");
-  cantidad.textContent = "Formatos detectados: " + formatosFiltrados.length;
+function renderizarListaFormatos() {
+  var div = document.getElementById('lista-formatos');
+  div.innerHTML = "";
   if (formatosFiltrados.length === 0) {
-    lista.innerHTML = "<span style='color:#b00020;'>No se encontraron formatos.</span>";
-    formatoSeleccionado = null;
+    div.innerHTML = "<span style='color:#888;'>No se encontraron formatos.</span>";
+    document.getElementById("cantidad-formatos").textContent = "0";
     return;
   }
   var totalPaginas = Math.ceil(formatosFiltrados.length / formatosPorPagina);
   if (paginaFormatos < 1) paginaFormatos = 1;
   if (paginaFormatos > totalPaginas) paginaFormatos = totalPaginas;
-  var inicio = (paginaFormatos-1)*formatosPorPagina;
-  var fin = Math.min(inicio+formatosPorPagina, formatosFiltrados.length);
-  var pagina = formatosFiltrados.slice(inicio, fin);
-  var html = "";
-  for (var i=0; i<pagina.length; i++) {
-    var nombre = pagina[i];
-    html += "<a href='#' onclick='seleccionarFormato(\""+nombre.replace(/"/g,'&quot;')+"\");return false;'"+(formatoSeleccionado===nombre?" style='font-weight:bold;color:#214c7b;'":"")+">"+nombre+"</a>";
+  var inicio = (paginaFormatos - 1) * formatosPorPagina;
+  var fin = inicio + formatosPorPagina;
+  var formatosPagina = formatosFiltrados.slice(inicio, fin);
+
+  for (var i = 0; i < formatosPagina.length; i++) {
+    var nombre = String(formatosPagina[i].Nombre);
+    div.innerHTML +=
+      "<a href='#' onclick='seleccionarFormato(" + (inicio + i) + ");return false;'"
+      + (formatoSeleccionado && formatoSeleccionado.Nombre === nombre ? " style='font-weight:bold;color:#214c7b;display:block;margin-bottom:5px;'" : " style='display:block;margin-bottom:5px;'")
+      + ">" + nombre + "</a>";
   }
+
   // Controles de paginación
   if (totalPaginas > 1) {
-    html += "<div class='pagina'>";
-    for (var p=1; p<=totalPaginas; p++) {
-      html += "<button onclick='irPaginaFormatos("+p+")'"+(p===paginaFormatos?" class='active'":"")+">"+p+"</button>";
+    var paginador = "<div class='pagina' style='margin-top:12px;text-align:center;'>";
+    for (var p = 1; p <= totalPaginas; p++) {
+      paginador += "<button"
+        + (p == paginaFormatos ? " class='active'" : "")
+        + " onclick='paginaFormatos=" + p + ";renderizarListaFormatos();' style='margin:0 2px;padding:2px 8px;border-radius:5px;border:1px solid #bccce7;'>" + p + "</button>";
     }
-    html += "</div>";
+    paginador += "</div>";
+    div.innerHTML += paginador;
   }
-  lista.innerHTML = html;
+  document.getElementById("cantidad-formatos").textContent = formatosFiltrados.length;
 }
 
 
-function seleccionarFormato(nombre) {
-  formatoSeleccionado = nombre;
-  renderFormatosPaginados();
+function seleccionarFormato(idx) {
+  formatoSeleccionado = formatosFiltrados[idx];
+  document.getElementById("paso1-elegir-formato").style.display = "none";
+  document.getElementById("paso2-elegir-destino").style.display = "block";
+  llenarAniosOficio();
+  document.getElementById("nuevo-nombre-oficio").value = "";
 }
+
+
 function irPaginaFormatos(pag) {
   paginaFormatos = pag;
   renderFormatosPaginados();
@@ -1718,70 +1695,182 @@ function cargarSubcasosOficio(anio, caso) {
 }
 
 function copiarYCrearOficio() {
-  // Obtener los valores seleccionados
-  var casoSel = document.getElementById('select-caso-oficio-principal').value;
-  if (!casoSel) {
-    alert("Debe seleccionar un caso.");
+  var anio = document.getElementById("select-anio-oficio").value;
+  var caso = document.getElementById("select-caso-oficio").value;
+  var subcaso = document.getElementById("select-subcaso-oficio").value;
+  var nombreNuevo = document.getElementById("nuevo-nombre-oficio").value.trim();
+  if (!anio || !caso || !nombreNuevo || !formatoSeleccionado) {
+    alert("Completa todos los datos.");
     return;
   }
-  var partes = casoSel.split("||");
-  var anio = partes[0];
-  var caso = partes[1];
-  var subcaso = document.getElementById('select-subcaso-oficio-principal').value;
-  var nuevoNombre = document.getElementById('nuevo-nombre-oficio').value.trim();
-
-  // Validaciones de campos
-  if (!nuevoNombre) {
-    alert("Debe escribir un nombre para el nuevo oficio.");
+  // Validar caracteres prohibidos
+  if (/[\\\/:*?"<>|]/.test(nombreNuevo)) {
+    alert("El nombre no puede tener caracteres especiales.");
     return;
   }
-  if (nuevoNombre.match(/[\\\/:*?"<>|]/)) {
-    alert("El nombre contiene caracteres no permitidos.");
-    return;
+  var rutaDestino = desktop + "\\Año " + anio + "\\" + caso;
+  if (subcaso) rutaDestino += "\\" + subcaso;
+  if (!fso.FolderExists(rutaDestino)) {
+    try {
+      fso.CreateFolder(rutaDestino);
+    } catch (e) {
+      alert("No se pudo crear la carpeta destino: " + rutaDestino);
+      return;
+    }
   }
-
-  // Validar formato seleccionado
-  if (!formatoSeleccionado) {
-    alert("Debe seleccionar un formato.");
-    return;
-  }
-
-  // Determinar la ruta destino
-  var rutaBase = desktop + "\\Año " + anio + "\\" + caso;
-  if (subcaso) {
-    rutaBase += "\\" + subcaso;
-  }
-  if (!fso.FolderExists(rutaBase)) {
-    alert("No existe la carpeta destino: " + rutaBase);
-    return;
-  }
-
-  // Ruta del nuevo archivo
-  var extension = formatoSeleccionado.split('.').pop();
-  var rutaDestino = rutaBase + "\\" + nuevoNombre + "." + extension;
-
-  // Verificar si ya existe
-  if (fso.FileExists(rutaDestino)) {
-    var sobreescribir = confirm("Ya existe un archivo con ese nombre en el destino. ¿Desea sobrescribirlo?");
-    if (!sobreescribir) return;
-  }
-
-  // Copiar el archivo
+  var ext = formatoSeleccionado.Nombre.split('.').pop();
+  var rutaFinal = rutaDestino + "\\" + nombreNuevo + "." + ext;
   try {
-    fso.CopyFile(formatoSeleccionado, rutaDestino, true);
-    // Abrir el archivo copiado
-    shell.Run('"' + rutaDestino + '"');
-    alert("Oficio creado correctamente:\n" + rutaDestino);
-  } catch (e) {
+    fso.CopyFile(formatoSeleccionado.Ruta, rutaFinal, false);
+    shell.Run('"' + rutaFinal + '"');
+    alert("Archivo creado correctamente.");
+    volverPaso1();
+  } catch(e) {
     alert("Error al copiar el archivo: " + e.message);
   }
 }
+
+// Inicializar cuando se cargue el apartado
+cargarFormatosOficios();
 
 // Ejecutar esto cuando se muestra la sección "Crear oficios"
 function mostrarSeccionCrearOficios() {
   cargarFormatosOficio();
   cargarDestinoOficios();
 }
+
+
+//ASDASKJ
+
+  function mostrarPaso2() {
+    if (!formatoSeleccionado) return;
+    document.getElementById("paso1-elegir-formato").style.display = "none";
+    document.getElementById("paso2-elegir-destino").style.display = "block";
+    // Aquí puedes cargar los selects o limpiar campos
+  }
+
+function volverPaso1() {
+  document.getElementById("paso1-elegir-formato").style.display = "block";
+  document.getElementById("paso2-elegir-destino").style.display = "none";
+  formatoSeleccionado = null;
+  renderizarListaFormatos();
+}
+
+  // Modifica tu renderizado de lista de formatos:
+ function renderizarListaFormatos() {
+    var div = document.getElementById('lista-formatos');
+    div.innerHTML = "";
+    if (formatosFiltrados.length === 0) {
+      div.innerHTML = "<span style='color:#888;'>No se encontraron formatos.</span>";
+      return;
+    }
+    // Paginación
+    var totalPaginas = Math.ceil(formatosFiltrados.length / formatosPorPagina);
+    if (paginaFormatos < 1) paginaFormatos = 1;
+    if (paginaFormatos > totalPaginas) paginaFormatos = totalPaginas;
+    var inicio = (paginaFormatos - 1) * formatosPorPagina;
+    var fin = inicio + formatosPorPagina;
+    var formatosPagina = formatosFiltrados.slice(inicio, fin);
+
+    for (var i = 0; i < formatosPagina.length; i++) {
+      var a = document.createElement("a");
+      a.textContent = formatosPagina[i].Nombre;
+      a.style.cursor = "pointer";
+      a.onclick = (function(idx) { return function() { seleccionarFormato(inicio + idx); }; })(i);
+      if (formatoSeleccionado && formatoSeleccionado.Nombre === formatosPagina[i].Nombre) {
+        a.classList.add('selected');
+      }
+      div.appendChild(a);
+    }
+
+    // Controles de paginación
+    if (totalPaginas > 1) {
+      var paginador = document.createElement("div");
+      paginador.className = "pagina";
+      for (var p = 1; p <= totalPaginas; p++) {
+        var btn = document.createElement("button");
+        btn.textContent = p;
+        if (p == paginaFormatos) btn.className = "active";
+        btn.onclick = (function(pg) { return function() { paginaFormatos = pg; renderizarListaFormatos(); }; })(p);
+        paginador.appendChild(btn);
+      }
+      div.appendChild(paginador);
+    }
+  }
+
+function llenarAniosOficio() {
+  var select = document.getElementById("select-anio-oficio");
+  if (!select) return;
+  select.innerHTML = "";
+  var anios = [];
+  try {
+    var carpetaEnum = new Enumerator(fso.GetFolder(desktop).SubFolders);
+    for (; !carpetaEnum.atEnd(); carpetaEnum.moveNext()) {
+      var nombre = carpetaEnum.item().Name;
+      if (nombre.match(/^Año \d{4}$/)) anios.push(nombre.replace("Año ", ""));
+    }
+  } catch (e) {}
+  anios.sort();
+  for (var i=0; i<anios.length; i++) {
+    var opt = document.createElement("option");
+    opt.value = anios[i];
+    opt.text = anios[i];
+    select.appendChild(opt);
+  }
+  llenarCasosOficio();
+}
+
+function llenarCasosOficio() {
+  var anio = document.getElementById("select-anio-oficio").value;
+  var selectCaso = document.getElementById("select-caso-oficio");
+  if (!selectCaso) return;
+  selectCaso.innerHTML = "";
+  if (!anio) return;
+  var ruta = desktop + "\\Año " + anio;
+  if (!fso.FolderExists(ruta)) return;
+  var casos = [];
+  try {
+    var casoEnum = new Enumerator(fso.GetFolder(ruta).SubFolders);
+    for (; !casoEnum.atEnd(); casoEnum.moveNext()) {
+      casos.push(casoEnum.item().Name);
+    }
+  } catch(e) {}
+  casos.sort();
+  for (var i=0; i<casos.length; i++) {
+    var opt = document.createElement("option");
+    opt.value = casos[i];
+    opt.text = casos[i];
+    selectCaso.appendChild(opt);
+  }
+  llenarSubcasosOficio();
+}
+
+function llenarSubcasosOficio() {
+  var anio = document.getElementById("select-anio-oficio").value;
+  var caso = document.getElementById("select-caso-oficio").value;
+  var selectSubcaso = document.getElementById("select-subcaso-oficio");
+  if (!selectSubcaso) return;
+  selectSubcaso.innerHTML = "<option value=''> (Sin subcaso) </option>";
+  if (!anio || !caso) return;
+  var ruta = desktop + "\\Año " + anio + "\\" + caso;
+  if (!fso.FolderExists(ruta)) return;
+  var subcasos = [];
+  try {
+    var subEnum = new Enumerator(fso.GetFolder(ruta).SubFolders);
+    for (; !subEnum.atEnd(); subEnum.moveNext()) {
+      subcasos.push(subEnum.item().Name);
+    }
+  } catch(e) {}
+  subcasos.sort();
+  for (var i=0; i<subcasos.length; i++) {
+    var opt = document.createElement("option");
+    opt.value = subcasos[i];
+    opt.text = subcasos[i];
+    selectSubcaso.appendChild(opt);
+  }
+}
+
+
 
 // Utilidad
   function abrirRuta(ruta) {
