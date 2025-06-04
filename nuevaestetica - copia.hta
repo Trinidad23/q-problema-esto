@@ -1932,6 +1932,18 @@ function cargarSubcasosOficio(anio, caso) {
   }
 }
 
+// Función utilitaria: crea todos los niveles de carpeta necesarios
+function crearRutaCompleta(ruta) {
+  var partes = ruta.split("\\");
+  var rutaActual = partes[0];
+  for (var i = 1; i < partes.length; i++) {
+    rutaActual += "\\" + partes[i];
+    if (!fso.FolderExists(rutaActual)) {
+      fso.CreateFolder(rutaActual);
+    }
+  }
+}
+
 function copiarYCrearOficio() {
   var formato = formatoSeleccionado;
   var anio = document.getElementById('select-anio-oficio').value;
@@ -1940,20 +1952,8 @@ function copiarYCrearOficio() {
   var subcaso = selectSubcaso ? selectSubcaso.value.trim() : "";
   var nuevoNombre = document.getElementById('nuevo-nombre-oficio').value.trim();
 
-  // LIMPIEZA: quitar "Eliminar" por si acaso
-  if (subcaso) {
-    subcaso = subcaso.replace(/Eliminar.*$/i, '').trim();
-  }
-
-  var feedbackMsg = "";
-  if (!formato || typeof formato !== "string" || formato.length < 4) feedbackMsg += "Seleccione un formato.\n";
-  if (!anio) feedbackMsg += "Seleccione un año.\n";
-  if (!caso) feedbackMsg += "Seleccione un caso.\n";
-  if (!nuevoNombre) feedbackMsg += "Ingrese un nombre para el archivo.\n";
-  if (nuevoNombre.match(/[\\\/:*?"<>|]/)) feedbackMsg += 'El nombre no puede contener caracteres especiales (\\ / : * ? " < > |)\n';
-
-  if (feedbackMsg) {
-    alert("Completa todos los datos.\n\n" + feedbackMsg);
+  if (!anio || !caso || !nuevoNombre) {
+    alert("Faltan datos requeridos.");
     return;
   }
 
@@ -1962,14 +1962,8 @@ function copiarYCrearOficio() {
     destino += "\\" + subcaso;
   }
 
-  if (!fso.FolderExists(destino)) {
-    try {
-      fso.CreateFolder(destino);
-    } catch (e) {
-      alert("No se pudo crear la carpeta destino: " + destino);
-      return;
-    }
-  }
+  // Corregido: crea toda la ruta si no existe
+  crearRutaCompleta(destino);
 
   var extension = ".docx";
   if (formato && typeof formato === "string") {
